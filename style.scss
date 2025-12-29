@@ -185,4 +185,32 @@ body {
         font-weight: 300;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     }
+
+    .lang-btns {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 20px;
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid $thread-color;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'PFPlayskoolPro', sans-serif;
+            text-transform: uppercase;
+            font-weight: bold;
+
+            &:hover {
+                background: $thread-color;
+                color: $ref-red-mid;
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+            }
+        }
+    }
 }

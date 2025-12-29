@@ -9,16 +9,18 @@ snowflakeImg.src = 'svg/snow.svg';
 function initSnow() {
     width = window.innerWidth;
     height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
+    if (canvas) {
+        canvas.width = width;
+        canvas.height = height;
+    }
 
     snowflakes = [];
     const count = 100;
 
     for (let i = 0; i < count; i++) {
         snowflakes.push({
-            x: Math.random() * width,
-            y: Math.random() * height,
+            x: Math.random() * (width || window.innerWidth),
+            y: Math.random() * (height || window.innerHeight),
             size: Math.random() * 15 + 10,
             speed: Math.random() * 1 + 0.5,
             opacity: Math.random() * 0.5 + 0.4,
@@ -30,6 +32,7 @@ function initSnow() {
 }
 
 function updateSnow() {
+    if (!ctx || !width || !height) return;
     ctx.clearRect(0, 0, width, height);
 
     if (snowflakeImg.complete) {
@@ -57,7 +60,13 @@ function updateSnow() {
     requestAnimationFrame(updateSnow);
 }
 
-window.addEventListener('resize', initSnow);
+window.addEventListener('resize', () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    initSnow();
+});
+width = window.innerWidth;
+height = window.innerHeight;
 initSnow();
 updateSnow();
 
@@ -66,12 +75,22 @@ const langOverlay = document.getElementById('language-overlay');
 const btnRu = document.getElementById('btn-ru');
 const btnEn = document.getElementById('btn-en');
 const baubleText = document.querySelector('.bauble-text');
-const modalTitleSelection = document.querySelector('#language-overlay .modal h2');
 const modalTitleWish = document.getElementById('wish-title');
 const wishText = document.getElementById('wish-text');
 const bauble = document.getElementById('main-bauble');
 const overlay = document.getElementById('overlay');
 const closeModal = document.getElementById('close-modal');
+
+// Animation Helper
+function safeAnime(params) {
+    if (typeof anime !== 'undefined') {
+        return anime(params);
+    } else {
+        // Simple fallback if anime is missing
+        if (params.complete) params.complete();
+        return null;
+    }
+}
 
 // Language Config
 const translations = {
@@ -121,66 +140,79 @@ let currentWishes = translations.ru.wishes;
 function selectLanguage(lang) {
     currentLang = lang;
     const t = translations[lang];
+    if (!t) return;
     currentWishes = t.wishes;
 
-    // Update UI texts
-    baubleText.textContent = t.bauble;
-    modalTitleWish.textContent = t.modalTitle;
-    wishText.textContent = lang === 'ru' ? "Пожелание загружается..." : "Wish is loading...";
+    // Update UI texts safely
+    if (baubleText) baubleText.textContent = t.bauble;
+    if (modalTitleWish) modalTitleWish.textContent = t.modalTitle;
+    if (wishText) wishText.textContent = lang === 'ru' ? "С Новым Годом!" : "Happy New Year!";
 
     // Hide language selection with animation
-    anime({
-        targets: '#language-overlay',
-        opacity: 0,
-        duration: 500,
-        easing: 'easeInQuad',
-        complete: () => {
-            langOverlay.style.display = 'none';
+    if (langOverlay) {
+        safeAnime({
+            targets: '#language-overlay',
+            opacity: 0,
+            duration: 500,
+            easing: 'easeInQuad',
+            complete: () => {
+                langOverlay.style.display = 'none';
+            }
+        });
+    }
+}
+
+if (btnRu) btnRu.addEventListener('click', () => selectLanguage('ru'));
+if (btnEn) btnEn.addEventListener('click', () => selectLanguage('en'));
+
+// Wishes Logic
+if (bauble) {
+    bauble.addEventListener('click', () => {
+        const t = translations[currentLang];
+        const randomWish = currentWishes[Math.floor(Math.random() * currentWishes.length)] || t.defaultWish;
+        if (wishText) wishText.textContent = randomWish;
+
+        if (overlay) {
+            overlay.style.display = 'flex';
+            safeAnime({
+                targets: '#overlay',
+                opacity: [0, 1],
+                duration: 500,
+                easing: 'easeOutQuad'
+            });
+
+            safeAnime({
+                targets: '.modal',
+                scale: [0.8, 1],
+                translateY: [20, 0],
+                opacity: [0, 1],
+                duration: 800,
+                easing: 'easeOutElastic(1, .8)'
+            });
         }
     });
 }
 
-btnRu.addEventListener('click', () => selectLanguage('ru'));
-btnEn.addEventListener('click', () => selectLanguage('en'));
-
-// Wishes Logic
-bauble.addEventListener('click', () => {
-    const t = translations[currentLang];
-    const randomWish = currentWishes[Math.floor(Math.random() * currentWishes.length)] || t.defaultWish;
-    wishText.textContent = randomWish;
-
-    overlay.style.display = 'flex';
-    anime({
-        targets: '#overlay',
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutQuad'
-    });
-
-    anime({
-        targets: '.modal',
-        scale: [0.8, 1],
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 800,
-        easing: 'easeOutElastic(1, .8)'
-    });
-});
-
-closeModal.addEventListener('click', () => {
-    anime({
-        targets: '#overlay',
-        opacity: 0,
-        duration: 300,
-        easing: 'easeInQuad',
-        complete: () => {
-            overlay.style.display = 'none';
+if (closeModal) {
+    closeModal.addEventListener('click', () => {
+        if (overlay) {
+            safeAnime({
+                targets: '#overlay',
+                opacity: 0,
+                duration: 300,
+                easing: 'easeInQuad',
+                complete: () => {
+                    overlay.style.display = 'none';
+                }
+            });
         }
     });
-});
+}
 
-overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-        closeModal.click();
-    }
-});
+if (overlay) {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay && closeModal) {
+            closeModal.click();
+        }
+    });
+}

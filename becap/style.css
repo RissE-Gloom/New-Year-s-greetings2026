@@ -181,4 +181,32 @@ body {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
+.modal .lang-btns {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.modal .lang-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #ffd700;
+  color: white;
+  padding: 15px 30px;
+  font-size: 1.5rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "PFPlayskoolPro", sans-serif;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.modal .lang-btn:hover {
+  background: #ffd700;
+  color: #910022;
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
 /*# sourceMappingURL=style.css.map */
